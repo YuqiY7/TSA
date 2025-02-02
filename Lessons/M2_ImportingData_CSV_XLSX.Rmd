@@ -1,8 +1,10 @@
 ---
 title: "Importing Data Sets"
 author: "Luana Lima"
-output: pdf_document
-editor_options: 
+output:
+  word_document: default
+  pdf_document: default
+editor_options:
   chunk_output_type: console
 ---
 

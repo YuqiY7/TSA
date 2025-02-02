@@ -29,12 +29,18 @@ Formatting of dates in R:
 # An example is provided to get you started.
 # (code must be uncommented)
 today <- Sys.Date()
-format(today, format = "%B")
+#format(today, format = "")
 format(today, format = "%y")
-#format(today, format = "")
-#format(today, format = "")
+format(today, format = "%B")
+format(today, format = "%Y-%b-%d-%a")
+#format(today,"%Y-%b-%d-%a") also works
 
 #as.Date()
+x <- c("1jan1960", "2jan1960", "31mar1960", "30jul1960","02/27/92", "02/27/92", "01/14/92")
+y <- as.Date(x, "%m/%d/%y")
+z <- as.Date(x, "%d%b%Y")
+#???as.Date(x, format, tryFormats = c("%Y-%m-%d", "%Y/%m/%d"),optional = FALSE, ...)
+#??? z <- as.Date(x, tryFormats = c("%d%b%Y", "%m/%d/%y"))
 ```
 
 
@@ -55,12 +61,49 @@ date_obj_today <- ymd(str_today)
 date_obj_today
 
 #Ex2
-str_today <- "2022-jan-19"
+str_today2 <- "2022/jan/19"
 #Sine the format is year-month-day we will use function ymd()
-date_obj_today <- ymd(str_today)
+date_obj_today2 <- ymd(str_today2)
 date_obj_today
 
 #there are other similar functions ydm(), mdy(), etc
+
+#同时提取多种格式
+date_x <- c("1jan1960", "2jan1960", "31mar1960", "30jul1960","02/27/92", "02/27/92", "01/14/92")
+parsed_date_x <- parse_date_time(date_x,orders = c("dmy","mdy"))
+date_X <- as.Date(parsed_date_x)
+date_x
+parsed_date_x
+date_X
+
+#Extraction
+year(date_X)
+wday(date_X,abbr = TURE,week_start = 1)
+
+#updating
+A <- ymd_hms("20250125 072717")
+A
+A <- update(A,year=2027,day=17)
+A
+#运算（Arithmetic）: Periods, Durations, Intervals
+B <- A-months(1)+days(3)
+B
+#dweeks()等可精确到秒数
+
+#interval表示两个时间点之间的区间
+time1 <- ymd(20220712)
+time2 <- ymd(20250126)
+intv1 <- time1 %--% time2
+intv1
+#OR
+intv2 <- interval(start = ymd(20220712),end = ymd(20250126))
+intv2
+#查看区间长度
+intv_length <- as.period(intv1)
+intv_length
+#判断某时间点是否在区间内
+A %within% intv1
+dateA %within% intv1
 ```
 
 ```{r DateExercise2}
