@@ -51,3 +51,6 @@ vignettes/*.pdf
 
 #Mac files
 .DS_Store
+*.log
+*.tex
+*.docx
