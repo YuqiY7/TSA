@@ -1,0 +1,213 @@
+---
+title: "ENV 797 - Time Series Analysis for Energy and Environment Applications | Spring 2025"
+subtitle: "Assignment 6 - Due date 02/27/25"
+author: "Yuqi Yang"
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## Directions
+
+You should open the .rmd file corresponding to this assignment on RStudio. The file is available on our class repository on Github.
+
+Once you have the file open on your local machine the first thing you will do is rename the file such that it includes your first and last name (e.g., "LuanaLima_TSA_A06_Sp25.Rmd"). Then change "Student Name" on line 4 with your name.
+
+Then you will start working through the assignment by **creating code and output** that answer each question. Be sure to use this assignment document. Your report should contain the answer to each question and any plots/tables you obtained (when applicable).
+
+When you have completed the assignment, **Knit** the text and code into a single PDF file. Submit this pdf using Sakai.
+
+R packages needed for this assignment: "ggplot2", "forecast", "tseries" and "sarima". Install these packages, if you haven't done yet. Do not forget to load them before running your script, since they are NOT default packages.
+
+```{r message=FALSE, warning=FALSE}
+#Load/install required package here
+library(ggplot2)
+library(forecast)
+library(tseries)
+library(sarima)
+library(cowplot)
+```
+
+This assignment has general questions about ARIMA Models.
+
+## Q1
+
+Describe the important characteristics of the sample autocorrelation function (ACF) plot and the partial sample autocorrelation function (PACF) plot for the following models:
+
+* AR(2)
+
+> Answer: ACF decays exponentially over time. PACF cuts off at lag 2, meaning only the first two lags have significant values.  
+
+* MA(1)
+
+> Answer: ACF cuts off at lag 1, meaning only the first lag is significant. PACF decays exponentially over time.  
+
+## Q2
+
+Recall that the non-seasonal ARIMA is described by three parameters ARIMA$(p,d,q)$ where $p$ is the order of the autoregressive component, $d$ is the number of times the series need to be differenced to obtain stationarity and $q$ is the order of the moving average component. If we don't need to difference the series, we don't need to specify the "I" part and we can use the short version, i.e., the ARMA$(p,q)$.
+
+(a) Consider three models: ARMA(1,0), ARMA(0,1) and ARMA(1,1) with parameters $\phi=0.6$ and $\theta= 0.9$. The $\phi$ refers to the AR coefficient and the $\theta$ refers to the MA coefficient. Use the `arima.sim()` function in R to generate $n=100$ observations from each of these three models. Then, using `autoplot()` plot the generated series in three separate graphs.
+
+```{r}
+set.seed(111)
+
+#Generate ARMA models
+Model_10 <- arima.sim(n=100,list(ar=0.6))
+Model_01 <- arima.sim(n=100,list(ma=0.9))
+Model_11 <- arima.sim(n=100,list(ar=0.6, ma=0.9))
+
+#Plot the time series
+autoplot(Model_10) + ggtitle("ARMA(1,0) phi=0.6")
+autoplot(Model_01) + ggtitle("ARMA(0,1) theta=0.9")
+autoplot(Model_11) + ggtitle("ARMA(1,1) phi=0.6 theta=0.9")
+```
+
+(b) Plot the sample ACF for each of these models in one window to facilitate comparison (Hint: use `cowplot::plot_grid()`).
+
+
+```{r}
+plot_grid(
+ggAcf(Model_10) + ggtitle("ARMA(1,0)"),
+ggAcf(Model_01) + ggtitle("ARMA(0,1)"),
+ggAcf(Model_11) + ggtitle("ARMA(1,1)"),
+ncol = 3
+)
+```
+
+(c) Plot the sample PACF for each of these models in one window to facilitate comparison.
+
+```{r}
+plot_grid(
+ggPacf(Model_10) + ggtitle("ARMA(1,0)"),
+ggPacf(Model_01) + ggtitle("ARMA(0,1)"),
+ggPacf(Model_11) + ggtitle("ARMA(1,1)"),
+ncol = 3
+)
+```
+
+(d) Look at the ACFs and PACFs. Imagine you had these plots for a data set and you were asked to identify the model, i.e., is it AR, MA or ARMA and the order of each component. Would you be able identify them correctly? Explain your answer.
+
+> Answer: No, not all models can be identified correctly.  
+ARMA(1,0) can be clearly identified because its ACF gradually decays and PACF cuts off after
+lag 1.  
+ARMA(0,1) is partially identifiable since ACF cuts off after lag 1, but PACF does not clearly
+decay, making it harder to confirm.  
+ARMA(1,1) is difficult to identify because ACF shows gradual decay, but PACF lacks a clear
+cutoff or smooth decay, making it hard to determine the model order.  
+
+(e) Compare the PACF values R computed with the values you provided for the lag 1 correlation coefficient, i.e., does $\phi=0.6$ match what you see on PACF for ARMA(1,0), and ARMA(1,1)? Should they match?
+
+> Answer: From the ARMA(1,0) PACF plot, the value at lag 1 is close to $\phi=0.6$, so it matches
+the expected result.  
+From the ARMA(1,1) PACF plot, the value at lag 1 is approximately 0.75, which does not match
+$\phi=0.6$, showing that the MA(1) term affects the PACF.  
+For ARMA(1,0), the PACF should be equal to $\phi=0.6$, at lag 1 and cut off after, so it should
+match. However, in ARMA(1,1), the PACF is influenced by the MA term, so it does not have
+to match exactly.  
+
+(f) Increase number of observations to $n=1000$ and repeat parts (b)-(e).
+
+```{r}
+set.seed(222)
+
+#Generate ARMA models with n=1000
+Model_10_n1000 <- arima.sim(n=1000,list(ar=0.6))
+Model_01_n1000 <- arima.sim(n=1000,list(ma=0.9))
+Model_11_n1000 <- arima.sim(n=1000,list(ar=0.6, ma=0.9))
+
+#Plot the time series
+autoplot(Model_10_n1000) + ggtitle("ARMA(1,0) n=1000 phi=0.6")
+autoplot(Model_01_n1000) + ggtitle("ARMA(0,1) n=1000 theta=0.9")
+autoplot(Model_11_n1000) + ggtitle("ARMA(1,1) n=1000 phi=0.6 theta=0.9")
+
+#Plot ACF
+plot_grid(
+ggAcf(Model_10_n1000) + ggtitle("ARMA(1,0)"),
+ggAcf(Model_01_n1000) + ggtitle("ARMA(0,1)"),
+ggAcf(Model_11_n1000) + ggtitle("ARMA(1,1)"),
+ncol = 3
+)
+
+#Plot PACF
+plot_grid(
+ggPacf(Model_10_n1000) + ggtitle("ARMA(1,0)"),
+ggPacf(Model_01_n1000) + ggtitle("ARMA(0,1)"),
+ggPacf(Model_11_n1000) + ggtitle("ARMA(1,1)"),
+ncol = 3
+)
+```
+
+>Answer for (d): With a larger sample size, model identification becomes clearer.  
+ARMA(1,0) model shows an ACF that gradually decays and a PACF that cuts off after lag 1,
+making it clearly identifiable as an AR(1) process.  
+ARMA(0,1) model has an ACF that cuts off after lag 1 and a PACF that gradually decays, which
+now makes it recognizable as an MA(1) process.  
+ARMA(1,1) model displays an ACF that gradually decays and a PACF with an initial spike
+followed by a gradual decay, showing the structure of an ARMA process.  
+
+>Answer for (e): For the ARMA(1,0) model, the PACF value at lag 1 is 0.6 which matches the $\phi$.  
+For the ARMA(1,1) model, the PACF at lag 1 is more than 0.75 due to the influence of MA
+component.  
+
+
+## Q3
+
+Consider the ARIMA model $y_t=0.7*y_{t-1}-0.25*y_{t-12}+a_t-0.1*a_{t-1}$
+
+(a) Identify the model using the notation ARIMA$(p,d,q)(P,D,Q)_ s$, i.e., identify the integers $p,d,q,P,D,Q,s$ (if possible) from the equation.
+
+(b) Also from the equation what are the values of the parameters, i.e., model coefficients.
+
+>Answer for (a):  
+$p=1$ (AR term $y_{t-1}$),  
+$d=0$ (no differencing),  
+$q=1$ (MA term $a_{t-1}$),  
+$P=1$ (SAR term $y_{t-12}$),  
+$D=0$ (no seasonal differencing),  
+$Q=0$ (no SMA term),  
+$s=12$ (seasonal period from $y_{t-12}$).  
+  
+  
+>Answer for (b):  
+$\phi_1=0.7$ (AR coefficient),  
+$\theta_1=-0.1$ (MA coefficient),  
+$\phi_{12}=-0.25$ (SAR coefficient).  
+  
+  
+  
+## Q4
+
+Simulate a seasonal ARIMA$(0, 1)\times(1, 0)_{12}$ model with $\phi =0 .8$ and $\theta = 0.5$ using the `sim_sarima()` function from package `sarima`. The $12$ after the bracket tells you that $s=12$, i.e., the seasonal lag is 12, suggesting monthly data whose behavior is repeated every 12 months. You can generate as many observations as you like. Note the Integrated part was omitted. It means the series do not need differencing, therefore $d=D=0$. Plot the generated
+series using `autoplot()`. Does it look seasonal?
+
+```{r}
+set.seed(333)
+
+sim_data <- sim_sarima(n=240, model = list(ma=0.5, sar=0.8, nseasons=12))
+
+sim_data_ts <- ts(sim_data, frequency = 12)
+
+autoplot(sim_data_ts) + ggtitle("Simulated SARIMA(0,0,1)(1,0,0)[12]")
+```
+
+>Answer: Some seasonality is visible, but the pattern is not very strong or consistently repeating over time.  
+  
+  
+  
+## Q5
+
+Plot ACF and PACF of the simulated series in Q4. Comment if the plots are well representing the model you simulated, i.e., would you be able to identify the order of both non-seasonal and seasonal components from the plots? Explain.
+
+```{r}
+plot_grid(
+ggAcf(sim_data_ts, lag.max = 48) + ggtitle("ACF of SARIMA(0,0,1)(1,0,0)[12]"),
+ggPacf(sim_data_ts, lag.max = 48) + ggtitle("PACF of SARIMA(0,0,1)(1,0,0)[12]"),
+ncol = 2
+)
+```
+
+>Answer: The plots align with the simulated model.  
+The ACF plot shows a significant spike at lag 1, indicating a non-seasonal MA(1) component. At lags 12,24,36 and 48, the ACF exhibits a gradual decay rather than a sharp cutoff, suggesting a SAR(1) effect.  
+The PACF gradually decreases at first few lags without a clear cutoff, consistent with the MA(1) process. At lag 12, the PACF shows a sharp cutoff with significant correlation, but the values at lags 24 and 36 are
+within confidence ranges, supporting the SAR(1) structure.  
+  
+  
